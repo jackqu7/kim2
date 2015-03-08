@@ -31,11 +31,11 @@ rather than an additional Mapping class. (goal 8, goal 13)
 
 .. code-block:: python
 
-  # old way:
-  AuthorSerializer().serialize(author)
+    # old way:
+    AuthorSerializer().serialize(author)
 
-  # new way:
-  AuthorSerializer(author).serialize()
+    # new way:
+    AuthorSerializer(author).serialize()
 
 Serializers are now instantiated with the object they refer to, rather
 than it being passed to serialize. This means fields can inspect and manipulate
@@ -66,16 +66,16 @@ syntactic sugar to make it easier to use, but what's really happening is this:
 .. code-block:: python
 
     class AuthorSerializer(Serializer):
-      __model__ = Author
+        __model__ = Author
 
-      name = Field(outputters=[
-        get_field_from_source,
-        output_as_string
-      ], inputters=[
-        get_field_by_name,
-        validate_is_string,
-        set_source_field
-      ])
+        name = Field(outputters=[
+            get_field_from_source,
+            output_as_string
+        ], inputters=[
+            get_field_by_name,
+            validate_is_string,
+            set_source_field
+        ])
 
 So, the flow for outputting is, sequentially:
 
@@ -97,44 +97,44 @@ Low level pipeline for nested:
 
 .. code-block:: python
     class AuthorSerializer(Serializer):
-      __model__ = Author
+        __model__ = Author
 
-      [...]
+        [...]
 
-  class BookSerializer(Serializer):
-      __model__ = Book
+    class BookSerializer(Serializer):
+        __model__ = Book
 
-      author = Field(outputters=[
-        get_field_from_source,
-        output_from_nested
-      ], inputters=[
-        get_field_by_name,
-        validate_is_dict,
-        input_from_nested
-        set_source_field,
-      ])
+        author = Field(outputters=[
+            get_field_from_source,
+            output_from_nested
+        ], inputters=[
+            get_field_by_name,
+            validate_is_dict,
+            input_from_nested
+            set_source_field,
+        ])
 
 Low level pipeline for nested SQA (to marshal an author by ID):
 
 .. code-block:: python
     class AuthorSerializer(Serializer):
-      __model__ = Author
+        __model__ = Author
 
-      [...]
+        [...]
 
-  class BookSerializer(Serializer):
-      __model__ = Book
+    class BookSerializer(Serializer):
+        __model__ = Book
 
-      author = Field(outputters=[
-        get_field_from_source,
-        output_from_nested
-      ], inputters=[
-        get_field_by_name,
-        validate_is_dict,
-        extract_id,
-        lookup_sqa_object_by_id,
-        set_source_field,
-      ])
+        author = Field(outputters=[
+            get_field_from_source,
+            output_from_nested
+        ], inputters=[
+            get_field_by_name,
+            validate_is_dict,
+            extract_id,
+            lookup_sqa_object_by_id,
+            set_source_field,
+        ])
 
 Here `extract_id` would extract data['id'] and return it, this then gets passed
 to lookup_sqa_object_by_id which returns the actual SQA object to be set on the
@@ -145,18 +145,18 @@ rather than a nested object it could be implemented like this: (goal 11)
 
 .. code-block:: python
 
-  class BookSerializer(Serializer):
-      __model__ = Book
+    class BookSerializer(Serializer):
+        __model__ = Book
 
-      author_id = Field(outputters=[
-        get_field_from_source,
-        output_as_string
-      ], inputters=[
-        get_field_by_name,
-        validate_is_string,
-        lookup_sqa_object_by_id,
-        set_source_field,
-      ])
+        author_id = Field(outputters=[
+            get_field_from_source,
+            output_as_string
+        ], inputters=[
+            get_field_by_name,
+            validate_is_string,
+            lookup_sqa_object_by_id,
+            set_source_field,
+        ])
 
 This is identical except that the `extract_id` part has been removed. Various
 combinations like this are possible to cater for different scenarios.
@@ -178,13 +178,13 @@ outputters/inputters you have to copy the entire chain again. Eg:
 .. code-block:: python
 
     class AuthorSerializer(Serializer):
-      __model__ = Author
+        __model__ = Author
 
-      name = StringField(outputters=[
-        get_field_from_source,
-        MY_NEW_OUTPUTTER,
-        output_as_string
-      ])
+        name = StringField(outputters=[
+            get_field_from_source,
+            MY_NEW_OUTPUTTER,
+            output_as_string
+        ])
 
 Note it needs to go in the middle - not just be appended to the end.
 
@@ -207,9 +207,9 @@ in the right place. So the example above becomes:
 .. code-block:: python
 
     class AuthorSerializer(Serializer):
-      __model__ = Author
+        __model__ = Author
 
-      name = StringField(ExtraOutputter(MY_NEW_OUTPUTTER, before=output_as_string))
+        name = StringField(ExtraOutputter(MY_NEW_OUTPUTTER, before=output_as_string))
 
 As well as `before`, ExtraOutputter/ExtraInputter can also take `after` and
 `replace`.
@@ -240,30 +240,30 @@ data, they can access other fields or even fields on the parent Serializer.
 Example (using full syntactic sugar this time):
 
 .. code-block:: python
-  def author_getter(field, data):
-    # data contains the ID we're after
-    return db.session.query(Author) \
-                     .filter(Author.type == field.serializer.data.type,
-                             Author.country == field.serializer.parent.data.country) \
-                     .one()
+    def author_getter(field, data):
+        # data contains the ID we're after
+        return db.session.query(Author) \
+                         .filter(Author.type == field.serializer.data.type,
+                                 Author.country == field.serializer.parent.data.country) \
+                         .one()
 
 
-  class AuthorSerializer(Serializer):
-    __model__ = Author
+    class AuthorSerializer(Serializer):
+      __model__ = Author
 
-    [...]
+      [...]
 
 
-  class BookSerializer(Serializer):
-      __model__ = Book
+    class BookSerializer(Serializer):
+        __model__ = Book
 
-      type = StringField(choices=['fiction', 'non-fiction'])
+        type = StringField(choices=['fiction', 'non-fiction'])
 
-      # Full syntactic sugar:
-      author = NestedField(AuthorSerializer, getter=author_getter)
-      # Which is equivilant to:
-      author = NestedField(AuthorSerializer,
-                           ExtraInputter(author_getter, replace=lookup_sqa_object_by_id)
+        # Full syntactic sugar:
+        author = NestedField(AuthorSerializer, getter=author_getter)
+        # Which is equivilant to:
+        author = NestedField(AuthorSerializer,
+                             ExtraInputter(author_getter, replace=lookup_sqa_object_by_id)
 
 Roles
 -----
