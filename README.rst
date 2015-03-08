@@ -16,16 +16,16 @@ object, you can set this to `dict` or `object`.
     class AuthorSerializer(Serializer):
         __model__ = Author
 
-     	  name = StringField()
+        name = StringField()
         date_of_birth = DateField()
 
 `AuthorSerializer` can now be used to serializer an Author object from the ORM:
 
 .. code-block:: python
 
-	>>> author = Author(name='JK Rowing', date_of_birth=date(1975, 3, 4))
-	>>> AuthorSerializer(author).serialize()
-	{'name': 'JK Rowling', 'date_of_birth': '1975-03-04'}
+  >>> author = Author(name='JK Rowing', date_of_birth=date(1975, 3, 4))
+  >>> AuthorSerializer(author).serialize()
+  {'name': 'JK Rowling', 'date_of_birth': '1975-03-04'}
 
 
 And the same Serializer can be used to marshal JSON data back into a new author
@@ -33,23 +33,23 @@ object.
 
 .. code-block:: python
 
-	>>> data = {'name': 'JK Rowling', 'date_of_birth': '1975-03-04'}
-	>>> author = AuthorSerializer().marshal(data)
-	<Author object>
-	>> author.name
-	'JK Rowling'
+  >>> data = {'name': 'JK Rowling', 'date_of_birth': '1975-03-04'}
+  >>> author = AuthorSerializer().marshal(data)
+  <Author object>
+  >> author.name
+  'JK Rowling'
 
 If an author object is already existing, it can be passed to the serializer
 and it will be updated, as opposed to a new object being created.
 
 .. code-block:: python
 
-	>>> author = Author(name='JK Rowing', date_of_birth=date(2003, 6, 2))
-	>>> data = {'name': 'JK Rowling', 'date_of_birth': '1975-03-04'}
-	>>> author = AuthorSerializer(author).marshal(data)
-	<Author object>
-	>> author.date_of_birth
-	date(1975, 3, 4)
+  >>> author = Author(name='JK Rowing', date_of_birth=date(2003, 6, 2))
+  >>> data = {'name': 'JK Rowling', 'date_of_birth': '1975-03-04'}
+  >>> author = AuthorSerializer(author).marshal(data)
+  <Author object>
+  >> author.date_of_birth
+  date(1975, 3, 4)
 
 
 Inputters and Outputters
@@ -95,23 +95,23 @@ can raise an Exception if they are not happy with the data passed.
 .. code-block:: python
 
     def uppercase(field, data):
-		    """Outputter to transform data to uppercase"""
-		    return data.upper()
+        """Outputter to transform data to uppercase"""
+        return data.upper()
 
-  	def must_equal(field, data):
-    		"""Inputter which will fail unless the data it recieves is equal to
-    		match"""
-    		if data != field.match:
-      			raise InputterError('does not match')
-    		return inputter
+    def must_equal(field, data):
+        """Inputter which will fail unless the data it recieves is equal to
+        match"""
+        if data != field.match:
+            raise InputterError('does not match')
+        return inputter
 
-	class AuthorSerializer(Serializer):
+  class AuthorSerializer(Serializer):
       __model__ = Author
 
-	    name = StringField(ExtraInputter(must_equal, before=set_source_field),
+      name = StringField(ExtraInputter(must_equal, before=set_source_field),
                          ExtraOutputter(uppercase, before=output_as_string),
                          match='Bob')
-	    date_of_birth = DateField()
+      date_of_birth = DateField()
 
 Note the kwarg `match` is passed to StringField and can be used in the outputter.
 StringField will store any kwargs passed to it and they can be used by any
@@ -125,13 +125,13 @@ For example a composite field could be implemented as:
 
     def full_name(field, data):
         serializer_data = field.serializer.data
-    		return serializer_data.first_name + ' ' + serializer_data.last_name
+        return serializer_data.first_name + ' ' + serializer_data.last_name
 
-  	class AuthorSerializer(Serializer):
-    		__model__ = Author
+    class AuthorSerializer(Serializer):
+        __model__ = Author
 
-  	    name = Field(outputters=[full_name(), output_as_string()])
-  	    date_of_birth = DateField()
+        name = Field(outputters=[full_name(), output_as_string()])
+        date_of_birth = DateField()
 
 Note the use of `Field` rather than `StringField` - this is because we are no
 longer interested in the default source of `name` on the object, so we can't
@@ -145,17 +145,17 @@ objects. These can be defined using *NestedField*.
 
 .. code-block:: python
 
-  	class AuthorSerializer(Serializer):
-    		__model__ = Author
+    class AuthorSerializer(Serializer):
+        __model__ = Author
 
-  	    name = StringField()
-  	    date_of_birth = DateField()
+        name = StringField()
+        date_of_birth = DateField()
 
-	class BookSerializer(Serializer):
-  		__model__ = Book
+  class BookSerializer(Serializer):
+      __model__ = Book
 
-	    title = StringField()
-	    author = NestedField(AuthorSerializer)
+      title = StringField()
+      author = NestedField(AuthorSerializer)
 
   >>> author = Author(name='JK Rowing', date_of_birth=date(1975, 3, 4))
   >>> book = Book(title='Harry Potter', author=author)
