@@ -16,8 +16,8 @@ object, you can set this to `dict` or `object`.
     class AuthorSerializer(Serializer):
     	__model__ = Author
 
-      name = StringField()
-      date_of_birth = DateField()
+     	name = StringField()
+      	date_of_birth = DateField()
 
 `AuthorSerializer` can now be used to serializer an Author object from the ORM:
 
@@ -109,8 +109,8 @@ can raise an Exception if they are not happy with the data passed.
 		__model__ = Author
 
 	    name = StringField(ExtraInputter(must_equal, before=set_source_field),
-                         ExtraOutputter(uppercase, before=output_as_string),
-                         match='Bob')
+                           ExtraOutputter(uppercase, before=output_as_string),
+                           match='Bob')
 	    date_of_birth = DateField()
 
 Note the kwarg `match` is passed to StringField and can be used in the outputter.
@@ -124,7 +124,7 @@ For example a composite field could be implemented as:
 .. code-block:: python
 
 	def full_name(field, data):
-    serializer_data = field.serializer.data
+        serializer_data = field.serializer.data
 		return serializer_data.first_name + ' ' + serializer_data.last_name
 
 	class AuthorSerializer(Serializer):
@@ -182,12 +182,12 @@ Collections take an inner type and return a list of objects serialised/marshalle
 into this type.
 
 .. code-block:: python
+    
+    class BookSerializer(Serializer):
+        __model__ = Book
 
-  class BookSerializer(Serializer):
-    __model__ = Book
-
-    title = StringField()
-    tags = CollectionField(StringField)
+        title = StringField()
+        tags = CollectionField(StringField)
 
 
 Roles
@@ -204,16 +204,16 @@ other roles using the + and - operators.
 .. code-block:: python
 
     class AuthorSerializer(Serializer):
-      __model__ = Author
+         __model__ = Author
 
-      name = StringField()
-      date_of_birth = DateField()
-      address = StringField()
-      postcode = StringField()
-      country = StringField()
+        name = StringField()
+        date_of_birth = DateField()
+        address = StringField()
+        postcode = StringField()
+        country = StringField()
 
-      __roles__ = {
-        '__default__': whitelist('name', 'date_of_birth')
-        'full': whitelist('name', 'date_of_birth', 'address', 'postcode', 'country')
-        'with_address': role('__default__') + whitelist('address', 'postcode')
-      }
+        __roles__ = {
+            '__default__': whitelist('name', 'date_of_birth')
+            'full': whitelist('name', 'date_of_birth', 'address', 'postcode', 'country')
+            'with_address': role('__default__') + whitelist('address', 'postcode')
+        }
