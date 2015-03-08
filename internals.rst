@@ -96,6 +96,7 @@ be handled with such inputters/outputters.
 Low level pipeline for nested:
 
 .. code-block:: python
+
     class AuthorSerializer(Serializer):
         __model__ = Author
 
@@ -117,6 +118,7 @@ Low level pipeline for nested:
 Low level pipeline for nested SQA (to marshal an author by ID):
 
 .. code-block:: python
+
     class AuthorSerializer(Serializer):
         __model__ = Author
 
